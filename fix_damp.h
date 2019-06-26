@@ -16,21 +16,21 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(damp/sphere,FixDampSphere)
+FixStyle(damp,FixDamp)
 
 #else
 
-#ifndef LMP_FIX_DAMP_SPHERE_H
-#define LMP_FIX_DAMP_SPHERE_H
+#ifndef LMP_FIX_DAMP_H
+#define LMP_FIX_DAMP_H
 
 #include "fix.h"
 
 namespace LAMMPS_NS {
 
-class FixDampSphere : public Fix {
+class FixDamp : public Fix {
  public:
-  FixDampSphere(class LAMMPS *, int, char **);
-  virtual ~FixDampSphere();
+  FixDamp(class LAMMPS *, int, char **);
+  virtual ~FixDamp();
   int setmask();
   void init();
   void setup(int);

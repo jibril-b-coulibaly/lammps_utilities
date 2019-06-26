@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include "fix_damp_sphere.h"
+#include "fix_damp.h"
 #include "atom.h"
 #include "update.h"
 #include "respa.h"
@@ -29,16 +29,16 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixDampSphere::FixDampSphere(LAMMPS *lmp, int narg, char **arg) :
+FixDamp::FixDamp(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
   gamma(NULL)
 {
   dynamic_group_allow = 1;
   
   if (!atom->sphere_flag)
-	error->all(FLERR,"Fix damp/sphere requires atom style sphere");
+	error->all(FLERR,"Fix damp requires atom style sphere");
 
-  if (narg < 4) error->all(FLERR,"Illegal fix damp/sphere command");
+  if (narg < 4) error->all(FLERR,"Illegal fix damp command");
 
   double gamma_one = force->numeric(FLERR,arg[3]);
   gamma = new double[atom->ntypes+1];
@@ -49,14 +49,14 @@ FixDampSphere::FixDampSphere(LAMMPS *lmp, int narg, char **arg) :
   int iarg = 4;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"scale") == 0) {
-      if (iarg+3 > narg) error->all(FLERR,"Illegal fix damp/sphere command");
+      if (iarg+3 > narg) error->all(FLERR,"Illegal fix damp command");
       int itype = force->inumeric(FLERR,arg[iarg+1]);
       double scale = force->numeric(FLERR,arg[iarg+2]);
       if (itype <= 0 || itype > atom->ntypes)
-        error->all(FLERR,"Illegal fix damp/sphere command");
+        error->all(FLERR,"Illegal fix damp command");
       gamma[itype] = gamma_one * scale;
       iarg += 3;
-    } else error->all(FLERR,"Illegal fix damp/sphere command");
+    } else error->all(FLERR,"Illegal fix damp command");
   }
 
   respa_level_support = 1;
@@ -65,14 +65,14 @@ FixDampSphere::FixDampSphere(LAMMPS *lmp, int narg, char **arg) :
 
 /* ---------------------------------------------------------------------- */
 
-FixDampSphere::~FixDampSphere()
+FixDamp::~FixDamp()
 {
   delete [] gamma;
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixDampSphere::setmask()
+int FixDamp::setmask()
 {
   int mask = 0;
   mask |= POST_FORCE;
@@ -83,7 +83,7 @@ int FixDampSphere::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::init()
+void FixDamp::init()
 {
   int max_respa = 0;
 
@@ -95,7 +95,7 @@ void FixDampSphere::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::setup(int vflag)
+void FixDamp::setup(int vflag)
 {
   if (strstr(update->integrate_style,"verlet"))
     post_force(vflag);
@@ -108,14 +108,14 @@ void FixDampSphere::setup(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::min_setup(int vflag)
+void FixDamp::min_setup(int vflag)
 {
   post_force(vflag);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::post_force(int /*vflag*/)
+void FixDamp::post_force(int /*vflag*/)
 {
   // apply force and torque reduction to finite-size atoms in group
   // force is reduced if its work is positive
@@ -152,14 +152,14 @@ void FixDampSphere::post_force(int /*vflag*/)
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::post_force_respa(int vflag, int ilevel, int /*iloop*/)
+void FixDamp::post_force_respa(int vflag, int ilevel, int /*iloop*/)
 {
   if (ilevel == ilevel_respa) post_force(vflag);
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixDampSphere::min_post_force(int vflag)
+void FixDamp::min_post_force(int vflag)
 {
   post_force(vflag);
 }
